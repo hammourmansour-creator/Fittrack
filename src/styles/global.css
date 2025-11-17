@@ -494,3 +494,59 @@ tbody tr:nth-child(even) {
     height: 72px;
   }
 }
+
+.auth-link {
+  color: #2563eb; /* Tailwind blue-600 */
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-link:hover {
+  color: #1d4ed8; /* darker blue */
+}
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.35s ease-in-out;
+}
+
+.error-text {
+  color: #dc2626; /* red-600 */
+  font-size: 0.85rem;
+  margin-top: -4px;
+  margin-bottom: 10px;
+}
+
+/* Password input with eye icon */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon input {
+  padding-right: 40px; /* space for the icon button */
+}
+
+.input-icon-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.input-icon-button:hover {
+  color: #374151;
+}

@@ -6,80 +6,92 @@
 // After successful signup → redirect to dashboard.
 // --------------------------------------
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+// src/pages/RegisterPage.jsx
 
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
-  const { register } = useAuth(); // Firebase register function
+  // If your AuthContext uses "register" instead of "signup",
+  // change this line to: const { register } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
-  // Form state
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
 
-  // Update form fields
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  // Submit signup form
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
     try {
-      // Create account with Firebase
-      await register(form.email, form.password);
-
-      // Redirect after successful registration
+      await signup(email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError("Could not create account.");
-      console.error("Register error:", err);
+      console.error(err);
+      setError("Could not create account. Try a different email.");
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
     }
-  };
+  }
 
   return (
-    <main className="auth-page">
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Create Account</h2>
+    <main className="app-main">
+      <div className="form-card">
+        <h2>Sign up</h2>
+        <p style={{ color: "#6b7280", marginBottom: 12 }}>
+          Create your FitTrack account and start logging your workouts.
+        </p>
 
-        {error && <div className="error">{error}</div>}
+        {error && <p className="error-text">{error}</p>}
 
-        {/* Email input */}
-        <label>
-          Email
+        <form onSubmit={handleSubmit} className={shake ? "shake" : ""}>
+          <label>Email</label>
           <input
             type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-        </label>
 
-        {/* Password input */}
-        <label>
-          Password (min 6 characters)
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            minLength={6}
-          />
-        </label>
+          <label>Password</label>
+          <div className="input-with-icon">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="input-icon-button"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
-        <button className="primary-btn" type="submit">
-          Sign Up
-        </button>
+          <button
+            type="submit"
+            className="primary-btn"
+            style={{ marginTop: 12 }}
+          >
+            Sign up
+          </button>
+        </form>
 
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Login</Link>
+        <p style={{ marginTop: 12 }}>
+          Already have an account?{" "}
+          <Link to="/login" className="auth-link">
+            Login
+          </Link>
         </p>
-      </form>
+      </div>
     </main>
   );
 }

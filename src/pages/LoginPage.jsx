@@ -1,85 +1,84 @@
-// --------------------------------------
-// LoginPage.jsx
-// --------------------------------------
-// This page lets users log in using Firebase auth.
-// Form → email + password
-// On success → redirect to dashboard
-// On error → show simple message
-// --------------------------------------
-
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const { login } = useAuth(); // from AuthContext
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
 
-  // Update form fields
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  // Submit login form
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
     try {
-      // Firebase login
-      await login(form.email, form.password);
-
-      // Redirect to dashboard if login succeeds
+      await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      // If wrong info → show error
-      setError("Invalid email or password.");
-      console.error("Login error:", err);
+      setError("Incorrect email or password.");
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
     }
-  };
+  }
 
   return (
-    <main className="auth-page">
-      <form className="auth-card" onSubmit={handleSubmit}>
+    <main className="app-main">
+      <div className="form-card">
         <h2>Login</h2>
+        <p style={{ color: "#6b7280", marginBottom: 12 }}>
+          Welcome back. Log in to see your workouts and dashboard.
+        </p>
 
-        {error && <div className="error">{error}</div>}
+        {error && <p className="error-text">{error}</p>}
 
-        {/* Email input */}
-        <label>
-          Email
+        <form onSubmit={handleSubmit} className={shake ? "shake" : ""}>
+          <label>Email</label>
           <input
             type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-        </label>
 
-        {/* Password input */}
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
+          <label>Password</label>
+          <div className="input-with-icon">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="input-icon-button"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
-        <button className="primary-btn" type="submit">
-          Sign In
-        </button>
+          <button
+            type="submit"
+            className="primary-btn"
+            style={{ marginTop: 12 }}
+          >
+            Login
+          </button>
+        </form>
 
-        <p className="auth-switch">
-          Don't have an account? <Link to="/register">Register</Link>
+        <p style={{ marginTop: 14, fontSize: "0.9rem" }}>
+          Don’t have an account?{" "}
+          <Link to="/register" className="auth-link">
+            Register
+          </Link>
         </p>
-      </form>
+      </div>
     </main>
   );
 }
