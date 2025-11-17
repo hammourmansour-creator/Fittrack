@@ -7,10 +7,8 @@
 // Fields:
 //  - weight
 //  - goalWeight
-//  - dailyCalories
-//  - dailySteps
 //  - weeklyGoalDays
-// Includes validation to prevent negative values.
+// Includes validation to prevent invalid values.
 // --------------------------------------
 
 import { useEffect, useState } from "react";
@@ -23,8 +21,6 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState({
     weight: "",
     goalWeight: "",
-    dailyCalories: "",
-    dailySteps: "",
     weeklyGoalDays: "4",
   });
 
@@ -47,12 +43,6 @@ export default function ProfilePage() {
               data.weight != null ? String(data.weight) : "",
             goalWeight:
               data.goalWeight != null ? String(data.goalWeight) : "",
-            dailyCalories:
-              data.dailyCalories != null
-                ? String(data.dailyCalories)
-                : "",
-            dailySteps:
-              data.dailySteps != null ? String(data.dailySteps) : "",
             weeklyGoalDays:
               data.weeklyGoalDays != null
                 ? String(data.weeklyGoalDays)
@@ -87,17 +77,9 @@ export default function ProfilePage() {
     if (!user) return;
 
     // Convert to numbers
-    const weightNum = profile.weight
-      ? Number(profile.weight)
-      : null;
+    const weightNum = profile.weight ? Number(profile.weight) : null;
     const goalWeightNum = profile.goalWeight
       ? Number(profile.goalWeight)
-      : null;
-    const caloriesNum = profile.dailyCalories
-      ? Number(profile.dailyCalories)
-      : null;
-    const stepsNum = profile.dailySteps
-      ? Number(profile.dailySteps)
       : null;
     const weeklyGoalNum = profile.weeklyGoalDays
       ? Number(profile.weeklyGoalDays)
@@ -114,18 +96,8 @@ export default function ProfilePage() {
       return;
     }
 
-    if (caloriesNum !== null && caloriesNum < 0) {
-      alert("Calories cannot be negative.");
-      return;
-    }
-
-    if (stepsNum !== null && stepsNum < 0) {
-      alert("Steps cannot be negative.");
-      return;
-    }
-
     if (weeklyGoalNum < 1 || weeklyGoalNum > 7) {
-      alert("Weekly goal must be between 1 and 7 days.");
+      alert("Weekly training goal must be between 1 and 7 days.");
       return;
     }
 
@@ -135,8 +107,6 @@ export default function ProfilePage() {
       const payload = {
         weight: weightNum,
         goalWeight: goalWeightNum,
-        dailyCalories: caloriesNum,
-        dailySteps: stepsNum,
         weeklyGoalDays: weeklyGoalNum,
       };
 
@@ -191,30 +161,6 @@ export default function ProfilePage() {
             onChange={handleChange}
             placeholder="e.g., 92"
             min="1"
-          />
-        </label>
-
-        <label>
-          Daily Calorie Target
-          <input
-            type="number"
-            name="dailyCalories"
-            value={profile.dailyCalories}
-            onChange={handleChange}
-            placeholder="e.g., 2400"
-            min="0"
-          />
-        </label>
-
-        <label>
-          Daily Steps Target
-          <input
-            type="number"
-            name="dailySteps"
-            value={profile.dailySteps}
-            onChange={handleChange}
-            placeholder="e.g., 15000"
-            min="0"
           />
         </label>
 
