@@ -550,3 +550,86 @@ tbody tr:nth-child(even) {
 .input-icon-button:hover {
   color: #374151;
 }
+
+/* =========================================================
+   FORCE DARKER TEXT INSIDE TODAY'S WORKOUT + ALL CHARTS
+========================================================= */
+
+.today-card p,
+.today-card li,
+.today-card span,
+.today-card div {
+  color: #1f2937 !important;  /* very dark grey */
+}
+
+.chart-container,
+.chart-container * {
+  color: #1f2937 !important;
+}
+
+/* Chart.js axis + labels override */
+canvas {
+  color: #1f2937 !important;
+}
+
+/* ================================
+   TODAY WORKOUT – EXERCISE ROW
+================================ */
+
+.exercise-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.exercise-text-title {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.exercise-text-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+/* Custom checkbox */
+.exercise-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 2px solid #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.exercise-checkbox input {
+  display: none;
+}
+
+.exercise-checkbox span {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: transparent;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+/* Checked state */
+.exercise-checkbox input:checked + span {
+  background: #22c55e;
+  transform: scale(1.05);
+}
+
+.exercise-checkbox:hover {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+}

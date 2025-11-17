@@ -227,34 +227,26 @@ export default function TodayWorkoutPage() {
       </p>
 
       {today.exercises.map((ex, i) => (
-        <div
-          key={i}
-          className="card"
-          style={{
-            marginBottom: "10px",
-            padding: "12px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          <div>
-            <strong>{ex.name}</strong>
-            <p style={{ margin: 0, color: "#9ca3af", fontSize: "0.85rem" }}>
-              {ex.sets} × {ex.reps}
-              {ex.note ? ` • ${ex.note}` : ""}
-            </p>
-          </div>
+  <div key={i} className="card exercise-row" style={{ marginBottom: "10px" }}>
+    <div>
+      <div className="exercise-text-title">{ex.name}</div>
+      <p className="exercise-text-sub">
+        {ex.sets} × {ex.reps}
+        {ex.note ? ` • ${ex.note}` : ""}
+      </p>
+    </div>
 
-          <input
-            type="checkbox"
-            checked={!!checked[i]}
-            onChange={() => toggle(i)}
-            style={{ transform: "scale(1.4)" }}
-          />
-        </div>
-      ))}
+    <label className="exercise-checkbox">
+      <input
+        type="checkbox"
+        checked={!!checked[i]}
+        onChange={() => toggle(i)}
+      />
+      <span />
+    </label>
+  </div>
+))}
+
 
       <button
         className="primary-btn"
