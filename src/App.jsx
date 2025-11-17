@@ -25,6 +25,7 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import CoachPage from "./pages/CoachPage.jsx";
 import MyPlansPage from "./pages/MyPlansPage.jsx";
 import TodayWorkoutPage from "./pages/TodayWorkoutPage.jsx";
+import CreatePlanPage from "./pages/CreatePlanPage.jsx";
 
 
 
@@ -111,6 +112,12 @@ export default function App() {
                 <TodayWorkoutPage />
               </ProtectedRoute>
             }
+          />
+          <Route
+           path="/plans/new" 
+           element={
+           <CreatePlanPage />
+           } 
           />
           
           {/* Fallback */}

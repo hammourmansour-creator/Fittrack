@@ -748,3 +748,68 @@ canvas {
   justify-content: flex-end;
   gap: 6px;
 }
+
+/* ================================
+   CUSTOM PLAN EDITOR
+================================ */
+
+.plan-days-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (min-width: 900px) {
+  .plan-days-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.plan-day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.plan-day-exercises {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-exercise-row {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 10px 8px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-exercise-main {
+  width: 100%;
+}
+
+.plan-exercise-meta {
+  display: flex;
+  gap: 8px;
+}
+
+.plan-exercise-meta > div {
+  flex: 1;
+}
+
+.plan-exercise-note-row {
+  display: flex;
+  gap: 8px;
+}
