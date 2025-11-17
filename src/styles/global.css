@@ -675,3 +675,76 @@ canvas {
     display: none;
   }
 }
+/* ================================
+   WORKOUTS GRID LAYOUT
+================================ */
+
+.workouts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.workout-card {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 14px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.workout-date {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.workout-category {
+  font-size: 0.8rem;
+  color: #4b5563;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+}
+
+.workout-field-row,
+.workout-notes-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.workout-label {
+  color: #6b7280;
+}
+
+.workout-value {
+  color: #111827;
+  font-weight: 500;
+  text-align: right;
+}
+
+.workout-notes {
+  color: #111827;
+  text-align: right;
+}
+
+.workout-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

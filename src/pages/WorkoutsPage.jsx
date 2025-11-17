@@ -3,7 +3,7 @@
 // --------------------------------------
 // Features:
 //  - Load workouts for logged-in user from Firestore
-//  - Show Date, Category, Exercise, Sets, Reps, Weight, Notes
+//  - Show all fields in responsive cards (no horizontal scroll)
 //  - Edit button -> /workouts/:id/edit
 //  - Delete button with custom confirmation modal
 // --------------------------------------
@@ -136,62 +136,66 @@ export default function WorkoutsPage() {
       )}
 
       {!loading && workouts.length > 0 && (
-        <div className="card" style={{ marginTop: "8px", paddingTop: 10 }}>
-          <div className="table-wrap">
-            <table className="workouts-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Category</th>
-                  <th>Exercise</th>
-                  <th>Sets</th>
-                  <th>Reps</th>
-                  <th>Weight (kg)</th>
-                  <th>Notes</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workouts.map((w) => (
-                  <tr key={w.id}>
-                    <td>{formatDate(w.createdAt)}</td>
-                    <td>{w.category || "Other"}</td>
-                    <td>{w.exercise}</td>
-                    <td>{w.sets}</td>
-                    <td>{w.reps}</td>
-                    <td>{w.weight}</td>
-                    <td>{w.notes}</td>
-                    <td>
-                      <button
-                        className="secondary-btn"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "0.8rem",
-                          marginRight: "6px",
-                        }}
-                        onClick={() => handleEdit(w.id)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="secondary-btn"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: "0.8rem",
-                          borderColor: "#fecaca",
-                          color: "#b91c1c",
-                          background: "#fef2f2",
-                        }}
-                        onClick={() => requestDelete(w.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="workouts-grid">
+          {workouts.map((w) => (
+            <div key={w.id} className="workout-card">
+              <div className="workout-card-header">
+                <span className="workout-date">
+                  {formatDate(w.createdAt)}
+                </span>
+                <span className="workout-category">
+                  {w.category || "Other"}
+                </span>
+              </div>
+
+              <div className="workout-field-row">
+                <span className="workout-label">Exercise</span>
+                <span className="workout-value">{w.exercise}</span>
+              </div>
+              <div className="workout-field-row">
+                <span className="workout-label">Sets</span>
+                <span className="workout-value">{w.sets}</span>
+              </div>
+              <div className="workout-field-row">
+                <span className="workout-label">Reps</span>
+                <span className="workout-value">{w.reps}</span>
+              </div>
+              <div className="workout-field-row">
+                <span className="workout-label">Weight (kg)</span>
+                <span className="workout-value">{w.weight}</span>
+              </div>
+
+              {w.notes && w.notes.trim() !== "" && (
+                <div className="workout-notes-row">
+                  <span className="workout-label">Notes</span>
+                  <span className="workout-notes">{w.notes}</span>
+                </div>
+              )}
+
+              <div className="workout-actions">
+                <button
+                  className="secondary-btn"
+                  style={{ padding: "4px 10px", fontSize: "0.8rem" }}
+                  onClick={() => handleEdit(w.id)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="secondary-btn"
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: "0.8rem",
+                    borderColor: "#fecaca",
+                    color: "#b91c1c",
+                    background: "#fef2f2",
+                  }}
+                  onClick={() => requestDelete(w.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
