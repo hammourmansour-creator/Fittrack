@@ -103,7 +103,15 @@ export default function WorkoutsPage() {
 
   return (
     <main className="page">
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "12px",
+          alignItems: "center",
+          marginBottom: "6px",
+        }}
+      >
         <h2>Workouts</h2>
 
         <Link to="/workouts/new" className="primary-btn">
@@ -111,80 +119,79 @@ export default function WorkoutsPage() {
         </Link>
       </div>
 
-      <p style={{ color: "#9ca3af", marginBottom: "16px" }}>
+      <p style={{ color: "#374151", marginBottom: "16px", fontSize: "0.9rem" }}>
         View and manage all workouts you have logged.
       </p>
 
       {loading && (
-        <p style={{ color: "#64748b" }}>Loading workouts...</p>
+        <p style={{ color: "#374151" }}>Loading workouts...</p>
       )}
 
       {!loading && workouts.length === 0 && (
         <div className="card" style={{ marginTop: "8px" }}>
-          <p style={{ color: "#64748b" }}>
+          <p style={{ color: "#374151" }}>
             No workouts yet. Add your first one!
           </p>
         </div>
       )}
 
       {!loading && workouts.length > 0 && (
-        <div
-          style={{
-            marginTop: "8px",
-            border: "1px solid #1f2937",
-            borderRadius: "12px",
-            overflowX: "auto",
-          }}
-        >
-          <table>
-            <thead>
-              <tr>
-                <th style={thStyle}>Date</th>
-                <th style={thStyle}>Category</th>
-                <th style={thStyle}>Exercise</th>
-                <th style={thStyle}>Sets</th>
-                <th style={thStyle}>Reps</th>
-                <th style={thStyle}>Weight (kg)</th>
-                <th style={thStyle}>Notes</th>
-                <th style={thStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workouts.map((w) => (
-                <tr key={w.id}>
-                  <td style={tdStyle}>{formatDate(w.createdAt)}</td>
-                  <td style={tdStyle}>{w.category || "Other"}</td>
-                  <td style={tdStyle}>{w.exercise}</td>
-                  <td style={tdStyle}>{w.sets}</td>
-                  <td style={tdStyle}>{w.reps}</td>
-                  <td style={tdStyle}>{w.weight}</td>
-                  <td style={tdStyle}>{w.notes}</td>
-                  <td style={tdStyle}>
-                    <button
-                      className="secondary-btn"
-                      style={{ padding: "4px 10px", fontSize: "0.8rem" }}
-                      onClick={() => handleEdit(w.id)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="secondary-btn"
-                      style={{
-                        padding: "4px 10px",
-                        fontSize: "0.8rem",
-                        marginLeft: "6px",
-                        borderColor: "#f97373",
-                        color: "#fecaca",
-                      }}
-                      onClick={() => requestDelete(w.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+        <div className="card" style={{ marginTop: "8px", paddingTop: 10 }}>
+          <div className="table-wrap">
+            <table className="workouts-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Exercise</th>
+                  <th>Sets</th>
+                  <th>Reps</th>
+                  <th>Weight (kg)</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {workouts.map((w) => (
+                  <tr key={w.id}>
+                    <td>{formatDate(w.createdAt)}</td>
+                    <td>{w.category || "Other"}</td>
+                    <td>{w.exercise}</td>
+                    <td>{w.sets}</td>
+                    <td>{w.reps}</td>
+                    <td>{w.weight}</td>
+                    <td>{w.notes}</td>
+                    <td>
+                      <button
+                        className="secondary-btn"
+                        style={{
+                          padding: "4px 10px",
+                          fontSize: "0.8rem",
+                          marginRight: "6px",
+                        }}
+                        onClick={() => handleEdit(w.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="secondary-btn"
+                        style={{
+                          padding: "4px 10px",
+                          fontSize: "0.8rem",
+                          borderColor: "#fecaca",
+                          color: "#b91c1c",
+                          background: "#fef2f2",
+                        }}
+                        onClick={() => requestDelete(w.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -197,18 +204,3 @@ export default function WorkoutsPage() {
     </main>
   );
 }
-
-const thStyle = {
-  textAlign: "left",
-  padding: "8px 10px",
-  fontSize: "0.85rem",
-  borderBottom: "1px solid #1f2937",
-  color: "#d1d5db",
-};
-
-const tdStyle = {
-  padding: "8px 10px",
-  fontSize: "0.85rem",
-  borderBottom: "1px solid #020617",
-  color: "#e5e7eb",
-};
