@@ -1,21 +1,16 @@
 // --------------------------------------
 // RegisterPage.jsx
 // --------------------------------------
-// This page lets a new user create an account.
-// Uses Firebase Authentication (email + password)
-// After successful signup → redirect to dashboard.
+// Sign up with email + password (Firebase Auth)
+// After successful signup → redirect to /dashboard
 // --------------------------------------
-
-// src/pages/RegisterPage.jsx
 
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
-  // If your AuthContext uses "register" instead of "signup",
-  // change this line to: const { register } = useAuth();
-  const { signup } = useAuth();
+  const { signup } = useAuth(); // wrapper around Firebase createUserWithEmailAndPassword
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -23,20 +18,41 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
     try {
       await signup(email, password);
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
-      setError("Could not create account. Try a different email.");
+      console.error("Signup error:", err);
+
+      let msg = "Could not create account. Please try again.";
+
+      if (err?.code === "auth/email-already-in-use") {
+        msg = "This email is already in use. Try logging in instead.";
+      } else if (err?.code === "auth/invalid-email") {
+        msg = "This email address is not valid.";
+      } else if (err?.code === "auth/weak-password") {
+        msg = "Password should be at least 6 characters.";
+      } else if (err?.code === "auth/operation-not-allowed") {
+        msg = "Email/password sign up is not enabled in Firebase.";
+      } else if (err?.code === "auth/network-request-failed") {
+        msg = "Network error. Check your connection and try again.";
+      } else if (err?.code === "auth/unauthorized-domain") {
+        msg = "Sign up is not allowed from this domain (Firebase settings).";
+      }
+
+      setError(msg);
       setShake(true);
-      setTimeout(() => setShake(false), 400);
+      setTimeout(() => setShake(false), 350);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -51,21 +67,26 @@ export default function RegisterPage() {
         {error && <p className="error-text">{error}</p>}
 
         <form onSubmit={handleSubmit} className={shake ? "shake" : ""}>
-          <label>Email</label>
+          <label htmlFor="register-email">Email</label>
           <input
+            id="register-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
 
-          <label>Password</label>
+          <label htmlFor="register-password">Password</label>
           <div className="input-with-icon">
             <input
+              id="register-password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -80,8 +101,9 @@ export default function RegisterPage() {
             type="submit"
             className="primary-btn"
             style={{ marginTop: 12 }}
+            disabled={isSubmitting}
           >
-            Sign up
+            {isSubmitting ? "Creating account..." : "Sign up"}
           </button>
         </form>
 
