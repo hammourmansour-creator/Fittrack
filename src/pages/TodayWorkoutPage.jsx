@@ -16,9 +16,11 @@ import {
   collection,
   serverTimestamp,
 } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function TodayWorkoutPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [today, setToday] = useState(null);
   const [checked, setChecked] = useState({});
   const [saving, setSaving] = useState(false);
@@ -179,7 +181,7 @@ export default function TodayWorkoutPage() {
       });
 
       alert("Workout completed! Great job.");
-      window.location.href = "/dashboard";
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error completing workout:", err);
       alert("Something went wrong saving your workout.");
