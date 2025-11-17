@@ -1,9 +1,6 @@
 // --------------------------------------
 // MusclePieChart.jsx
 // --------------------------------------
-// Pie chart showing distribution of workouts
-// per category for the last 7 days.
-// --------------------------------------
 
 import {
     Chart as ChartJS,
@@ -18,8 +15,9 @@ import {
   export default function MusclePieChart({ labels, data }) {
     if (!labels || labels.length === 0) {
       return (
-        <p style={{ color: "#64748b", marginTop: "8px" }}>
-          Log categorized workouts (Chest, Back, Legs...) to see your muscle focus.
+        <p style={{ color: "#4b5563", marginTop: "8px" }}>
+          Log categorized workouts (Chest, Back, Legs, Upper Body, Lower Body, Push, Pull…)
+          to see where you’re putting most of your volume.
         </p>
       );
     }
@@ -52,7 +50,7 @@ import {
         legend: {
           position: "bottom",
           labels: {
-            color: "#e5e7eb",
+            color: "#111827", // darker text
             font: {
               size: 11,
             },

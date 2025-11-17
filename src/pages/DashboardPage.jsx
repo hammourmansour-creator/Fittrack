@@ -1,16 +1,7 @@
 // --------------------------------------
 // DashboardPage.jsx
 // --------------------------------------
-// Uses workouts + profile to show:
-//  - Total workouts
-//  - Last workout date
-//  - Unique active days in last 7 days
-//  - Total volume
-//  - Weekly goal ring (X / goal days)
-// --------------------------------------
-
-// --------------------------------------
-// DashboardPage.jsx
+// Overview + weekly goal + goal-weight banner
 // --------------------------------------
 
 import { useEffect, useState } from "react";
@@ -49,21 +40,21 @@ export default function DashboardPage() {
     muscleLabels: [],
     muscleData: [],
     prs: [],
+    weight: null,
+    goalWeight: null,
   });
 
-  // For today's plan (active plan → today’s day)
   const [todayPlan, setTodayPlan] = useState(null);
   const [loadingPlan, setLoadingPlan] = useState(true);
 
   // --------------------------------------------------
-  // Load workouts + profile stats (same as before)
+  // Load workouts + profile stats
   // --------------------------------------------------
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
       try {
-        // 1) Load workouts for this user
         const workoutsRef = collection(db, "workouts");
         const q = query(workoutsRef, where("userId", "==", user.uid));
         const snapshot = await getDocs(q);
@@ -79,8 +70,6 @@ export default function DashboardPage() {
         let totalVolume = 0;
 
         const now = new Date();
-
-        // "Today" as LOCAL calendar day (00:00)
         const todayLocal = new Date(
           now.getFullYear(),
           now.getMonth(),
@@ -90,30 +79,27 @@ export default function DashboardPage() {
         const daysArray = [];
         const countsMap = {};
         const categoryCounts = {};
-        const prMap = {}; // exercise -> { weight, date }
+        const prMap = {};
 
-        // For today's card
         let todaysWorkouts = 0;
         let todaysVolume = 0;
 
-        // Prepare last 7 days (oldest -> newest) based on LOCAL days
+        // last 7 local calendar days
         for (let i = 6; i >= 0; i--) {
           const d = new Date(
             now.getFullYear(),
             now.getMonth(),
             now.getDate() - i
           );
-          const key = d.toISOString().slice(0, 10); // for chart buckets only
+          const key = d.toISOString().slice(0, 10);
           const label = d.toLocaleDateString(undefined, {
             weekday: "short",
           });
-
           daysArray.push({ key, label });
           countsMap[key] = 0;
         }
 
         if (items.length > 0) {
-          // Sort newest first
           items.sort((a, b) => {
             const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
             const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
@@ -124,20 +110,15 @@ export default function DashboardPage() {
             now.getFullYear(),
             now.getMonth(),
             now.getDate() - 6
-          ); // inclusive, local
+          );
 
           const uniqueDaysSet = new Set();
 
           items.forEach((w) => {
-            let createdDate;
+            let createdDate = w.createdAt?.toDate
+              ? w.createdAt.toDate()
+              : new Date();
 
-            if (w.createdAt?.toDate) {
-              createdDate = w.createdAt.toDate();
-            } else {
-              createdDate = new Date();
-            }
-
-            // Convert to LOCAL calendar day (drop time)
             const createdDay = new Date(
               createdDate.getFullYear(),
               createdDate.getMonth(),
@@ -151,29 +132,23 @@ export default function DashboardPage() {
             const weight = Number(w.weight) || 0;
             const workoutVolume = sets * reps * weight;
 
-            // Check if this workout is TODAY (local)
             if (createdDay.getTime() === todayLocal.getTime()) {
               todaysWorkouts += 1;
               todaysVolume += workoutVolume;
             }
 
-            // Global total volume
             totalVolume += workoutVolume;
 
-            // Only consider workouts within the last 7 LOCAL calendar days
             if (createdDay >= startWindowDate && createdDay <= now) {
               uniqueDaysSet.add(createdKey);
-
               if (countsMap[createdKey] != null) {
                 countsMap[createdKey] += 1;
               }
 
-              // Category counting for Top Focus & pie chart (last 7 days)
               const cat = w.category || "Other";
               categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
             }
 
-            // --------- PR tracking (all time) ----------
             const exerciseName = (w.exercise || "").trim();
             if (exerciseName && weight > 0) {
               const existing = prMap[exerciseName];
@@ -184,7 +159,6 @@ export default function DashboardPage() {
                 };
               }
             }
-            // -------------------------------------------
           });
 
           activeDays7d = uniqueDaysSet.size;
@@ -199,10 +173,8 @@ export default function DashboardPage() {
         const weeklyLabels = daysArray.map((d) => d.label);
         const weeklyData = daysArray.map((d) => countsMap[d.key]);
 
-        // Determine top category (last 7 days)
         let topCategory = null;
         let topCategoryCount = 0;
-
         Object.entries(categoryCounts).forEach(([cat, count]) => {
           if (count > topCategoryCount) {
             topCategory = cat;
@@ -210,11 +182,9 @@ export default function DashboardPage() {
           }
         });
 
-        // Muscle pie data (same categoryCounts, last 7 days)
         const muscleLabels = Object.keys(categoryCounts);
         const muscleData = muscleLabels.map((label) => categoryCounts[label]);
 
-        // Build PR list (top 5 by weight)
         const prs = Object.entries(prMap)
           .map(([exercise, info]) => ({
             exercise,
@@ -224,10 +194,12 @@ export default function DashboardPage() {
           .sort((a, b) => b.weight - a.weight)
           .slice(0, 5);
 
-        // 2) Load profile (weeklyGoalDays + streak info)
+        // profile
         let weeklyGoalDays = 4;
         let streak = 0;
         let longestStreak = 0;
+        let weight = null;
+        let goalWeight = null;
 
         const profileRef = doc(db, "profiles", user.uid);
         const profileSnap = await getDoc(profileRef);
@@ -241,6 +213,12 @@ export default function DashboardPage() {
           }
           if (data.longestStreak != null) {
             longestStreak = Number(data.longestStreak) || 0;
+          }
+          if (data.weight != null) {
+            weight = Number(data.weight);
+          }
+          if (data.goalWeight != null) {
+            goalWeight = Number(data.goalWeight);
           }
         }
 
@@ -261,6 +239,8 @@ export default function DashboardPage() {
           muscleLabels,
           muscleData,
           prs,
+          weight,
+          goalWeight,
         });
       } catch (err) {
         console.error("Error loading dashboard data:", err);
@@ -364,6 +344,8 @@ export default function DashboardPage() {
     muscleLabels,
     muscleData,
     prs,
+    weight,
+    goalWeight,
   } = stats;
 
   const formattedLastDate = lastWorkoutDate
@@ -376,8 +358,8 @@ export default function DashboardPage() {
 
   const goalText =
     activeDays7d >= goal
-      ? "Goal completed! Great job."
-      : `${Math.max(goal - activeDays7d, 0)} day(s) left to hit your goal`;
+      ? "Weekly training goal completed. Huge win."
+      : `${Math.max(goal - activeDays7d, 0)} more day(s) to hit your weekly goal.`;
 
   const topCategoryLabel =
     topCategory && topCategoryCount > 0 ? topCategory : "No data yet";
@@ -389,7 +371,6 @@ export default function DashboardPage() {
         } in the last 7 days`
       : "Train and categorize your workouts to see this.";
 
-  // Today widget texts
   const todayDone = todaysWorkouts > 0;
   const todayTitle = todayDone ? "Workout completed" : "No workout logged yet";
   const todaySubtitle = todayDone
@@ -398,12 +379,54 @@ export default function DashboardPage() {
       } today (${todaysVolume.toLocaleString()} kg total volume).`
     : "Hit the gym and log your first session for today.";
 
+  // Big goal-weight banner sentence
+  let goalWeightMessage = "";
+  if (weight != null && goalWeight != null) {
+    const diff = weight - goalWeight;
+    const absDiff = Math.abs(diff);
+
+    if (absDiff < 0.5) {
+      goalWeightMessage = `You’re basically at your goal weight (${weight} kg vs target ${goalWeight} kg). Maintain this and focus on performance now.`;
+    } else if (diff > 0) {
+      goalWeightMessage = `You’re ${absDiff.toFixed(
+        1
+      )} kg away from your goal of ${goalWeight} kg. Stay locked in—every session is pulling you closer.`;
+    } else {
+      goalWeightMessage = `You are already ${absDiff.toFixed(
+        1
+      )} kg under your goal (${weight} kg vs ${goalWeight} kg). That’s huge—decide your next target.`;
+    }
+  }
+
   return (
     <main className="page">
       <h2>Dashboard</h2>
-      <p style={{ color: "#9ca3af", marginBottom: "16px" }}>
-        Overview of your recent training.
+      <p style={{ color: "#4b5563", marginBottom: "12px" }}>
+        Overview of your recent training and progress.
       </p>
+
+      {/* Goal weight banner – very visible, near the top */}
+      {goalWeightMessage && (
+        <div
+          className="card"
+          style={{
+            marginBottom: "18px",
+            borderLeft: "4px solid #22c55e",
+            background: "#ecfdf3",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontWeight: 650,
+              fontSize: "1rem",
+              color: "#166534",
+            }}
+          >
+            {goalWeightMessage}
+          </p>
+        </div>
+      )}
 
       {loading && <p style={{ color: "#64748b" }}>Loading stats...</p>}
 
@@ -426,7 +449,7 @@ export default function DashboardPage() {
                     fontSize: "0.75rem",
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
-                    color: "#9ca3af",
+                    color: "#6b7280",
                     marginBottom: "4px",
                   }}
                 >
@@ -437,6 +460,7 @@ export default function DashboardPage() {
                     fontSize: "1.1rem",
                     fontWeight: 600,
                     marginBottom: "2px",
+                    color: "#111827",
                   }}
                 >
                   {todayTitle}
@@ -444,7 +468,7 @@ export default function DashboardPage() {
                 <div
                   style={{
                     fontSize: "0.85rem",
-                    color: "#9ca3af",
+                    color: "#4b5563",
                     marginBottom: "4px",
                   }}
                 >
@@ -453,7 +477,7 @@ export default function DashboardPage() {
                 <div
                   style={{
                     fontSize: "0.8rem",
-                    color: "#a5b4fc",
+                    color: "#2563eb",
                     marginTop: "4px",
                   }}
                 >
@@ -477,8 +501,8 @@ export default function DashboardPage() {
                       padding: "6px 10px",
                       borderRadius: "999px",
                       border: "1px solid #22c55e",
-                      color: "#bbf7d0",
-                      background: "#022c22",
+                      color: "#15803d",
+                      background: "#ecfdf3",
                     }}
                   >
                     ✅ Logged for today
@@ -497,11 +521,11 @@ export default function DashboardPage() {
             <h3>Today's Workout (Plan)</h3>
 
             {loadingPlan && (
-              <p style={{ color: "#9ca3af" }}>Loading active plan…</p>
+              <p style={{ color: "#4b5563" }}>Loading active plan…</p>
             )}
 
             {!loadingPlan && !todayPlan && (
-              <p style={{ color: "#9ca3af" }}>
+              <p style={{ color: "#4b5563" }}>
                 No active plan. Go to <strong>Plans</strong> and set one as
                 active.
               </p>
@@ -509,9 +533,9 @@ export default function DashboardPage() {
 
             {!loadingPlan && todayPlan && (
               <>
-                <p style={{ color: "#cbd5e1", marginBottom: "4px" }}>
+                <p style={{ color: "#111827", marginBottom: "4px" }}>
                   <strong>{todayPlan.title}</strong>{" "}
-                  <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>
+                  <span style={{ fontSize: "0.8rem", color: "#4b5563" }}>
                     (Day {todayPlan.dayIndex + 1} of {todayPlan.totalDays})
                   </span>
                 </p>
@@ -519,7 +543,7 @@ export default function DashboardPage() {
                   <p
                     style={{
                       fontSize: "0.8rem",
-                      color: "#9ca3af",
+                      color: "#4b5563",
                       marginBottom: "4px",
                     }}
                   >
@@ -531,13 +555,13 @@ export default function DashboardPage() {
                   style={{
                     paddingLeft: "18px",
                     fontSize: "0.9rem",
-                    color: "#e5e7eb",
+                    color: "#111827",
                   }}
                 >
                   {todayPlan.exercises.slice(0, 4).map((ex, i) => (
                     <li key={i}>
                       {ex.name}{" "}
-                      <span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
+                      <span style={{ color: "#4b5563", fontSize: "0.8rem" }}>
                         ({ex.sets} × {ex.reps})
                       </span>
                     </li>
@@ -605,20 +629,24 @@ export default function DashboardPage() {
           {/* Weekly bar chart */}
           <div className="card" style={{ marginTop: "20px" }}>
             <h3>Workouts in the Last 7 Days</h3>
-            <WeeklyBarChart labels={weeklyLabels} data={weeklyData} />
+            <div className="chart-container">
+              <WeeklyBarChart labels={weeklyLabels} data={weeklyData} />
+            </div>
           </div>
 
           {/* Muscle group pie chart */}
           <div className="card" style={{ marginTop: "20px" }}>
             <h3>Muscle Group Focus (Last 7 Days)</h3>
-            <MusclePieChart labels={muscleLabels} data={muscleData} />
+            <div className="chart-container">
+              <MusclePieChart labels={muscleLabels} data={muscleData} />
+            </div>
           </div>
 
           {/* PR card */}
           <div className="card" style={{ marginTop: "20px" }}>
             <h3>Top Personal Records</h3>
             {prs.length === 0 ? (
-              <p style={{ color: "#64748b", marginTop: "6px" }}>
+              <p style={{ color: "#4b5563", marginTop: "6px" }}>
                 Log workouts with weight to see your personal records.
               </p>
             ) : (
@@ -637,15 +665,15 @@ export default function DashboardPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       padding: "6px 0",
-                      borderBottom: "1px solid #020617",
+                      borderBottom: "1px solid #e5e7eb",
                     }}
                   >
                     <span>
                       <strong>{pr.exercise}</strong>
                     </span>
-                    <span style={{ color: "#e5e7eb", fontSize: "0.9rem" }}>
+                    <span style={{ color: "#111827", fontSize: "0.9rem" }}>
                       {pr.weight} kg{" "}
-                      <span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
+                      <span style={{ color: "#4b5563", fontSize: "0.8rem" }}>
                         (
                         {pr.date
                           ? pr.date.toLocaleDateString()
@@ -667,19 +695,22 @@ export default function DashboardPage() {
               <div
                 className="goal-ring"
                 style={{
-                  background: `conic-gradient(#22c55e ${percentage}%, #1f2937 0)`,
+                  background: `conic-gradient(#22c55e ${percentage}%, #e5e7eb 0)`,
                 }}
               >
                 <div className="goal-ring-inner">
                   <div className="goal-ring-value">
                     {activeDays7d}/{goal}
                   </div>
-                  <div className="goal-ring-label">days</div>
+                  <div className="goal-ring-label">days this week</div>
                 </div>
               </div>
             </div>
 
-            <p className="stat-sub" style={{ textAlign: "center" }}>
+            <p
+              className="stat-sub"
+              style={{ textAlign: "center", color: "#4b5563" }}
+            >
               {goalText}
             </p>
           </div>

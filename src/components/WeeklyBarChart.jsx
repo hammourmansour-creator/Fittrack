@@ -1,9 +1,6 @@
 // --------------------------------------
 // WeeklyBarChart.jsx
 // --------------------------------------
-// Simple bar chart showing workouts per day
-// for the last 7 days.
-// --------------------------------------
 
 import {
     Chart as ChartJS,
@@ -20,7 +17,7 @@ import {
   export default function WeeklyBarChart({ labels, data }) {
     if (!labels || labels.length === 0) {
       return (
-        <p style={{ color: "#64748b", marginTop: "8px" }}>
+        <p style={{ color: "#4b5563", marginTop: "8px" }}>
           Log some workouts to see your weekly activity.
         </p>
       );
@@ -32,7 +29,7 @@ import {
         {
           label: "Workouts",
           data,
-          backgroundColor: "rgba(34,197,94,0.75)", // green-ish
+          backgroundColor: "rgba(34,197,94,0.75)",
           borderRadius: 6,
           maxBarThickness: 40,
         },
@@ -59,17 +56,19 @@ import {
             display: false,
           },
           ticks: {
-            color: "#e5e7eb",
+            color: "#111827", // darker
+            font: { size: 11 },
           },
         },
         y: {
           beginAtZero: true,
           grid: {
-            color: "#1f2937",
+            color: "#e5e7eb",
           },
           ticks: {
             stepSize: 1,
-            color: "#9ca3af",
+            color: "#111827", // darker
+            font: { size: 11 },
           },
         },
       },
